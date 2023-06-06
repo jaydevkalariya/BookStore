@@ -14,14 +14,14 @@ import { RoutePaths } from "../../utils/enum";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import bookService from "../../service/book.service";
-// import { useCartContext } from "../../context/cart";
+ import { useCartContext } from "../../context/cart";
 
 const Header = () => {
   const classes = headerStyle();
   const authContext = useAuthContext();
-  // const cartContext = useCartContext();
-  // const [open, setOpen] = useState(false);
-  const open = false;
+   const cartContext = useCartContext();
+   const [open, setOpen] = useState(false);
+  //const open = false;
   const [query, setquery] = useState("");
   const [bookList, setbookList] = useState([]);
   const [openSearchResult, setOpenSearchResult] = useState(false);
@@ -41,8 +41,10 @@ const Header = () => {
   }, [authContext.user]);
 
   const logOut = () => {
+    console.log("logout");
+    cartContext.emptyCart();
     authContext.signOut();
-    // cartContext.emptyCart();
+     
   };
 
   const searchBook = async () => {
@@ -56,21 +58,22 @@ const Header = () => {
     setOpenSearchResult(true);
   };
 
-  // const addToCart = (book) => {
-  //   if (!authContext.user.id) {
-  //     navigate(RoutePaths.Login);
-  //     toast.error("Please login before adding books to cart");
-  //   } else {
-  //     Shared.addToCart(book, authContext.user.id).then((res) => {
-  //       if (res.error) {
-  //         toast.error(res.error);
-  //       } else {
-  //         toast.success("Item added in cart");
-  //         cartContext.updateCart();
-  //       }
-  //     });
-  //   }
-  // };
+  const addToCart = (book) => {
+    if (!authContext.user.id) {
+      navigate(RoutePaths.Login);
+      toast.error("Please login before adding books to cart");
+    } else {
+      Shared.addToCart(book, authContext.user.id).then((res) => {
+        if (res.error) {
+          toast.error(res.error);
+        } else {
+          toast.success("Item added in cart");
+          cartContext.updateCart();
+          console.log(cartContext.cartData);
+        }
+      });
+    }
+  };
 
   return (
     <div className={classes.headerWrapper}>
@@ -112,11 +115,13 @@ const Header = () => {
                       </ListItem>
                     ))}
                   </List>
+                  {authContext.user.id && (
+                    <>
                   <List className="cart-country-wrap">
                     <ListItem className="cart-link">
                       <Link to="/cart" title="Cart">
                         <img src={cartIcon} alt="cart.png" />
-                        {/* <span>{cartContext.cartData.length}</span> */}
+                        <span>{cartContext.cartData.length}</span>
                         Cart
                       </Link>
                     </ListItem>
@@ -125,12 +130,13 @@ const Header = () => {
                     </ListItem>
                   </List>
 
-                  {authContext.user.id && (
+                  
                     <List className="right">
                       <Button onClick={() => logOut()} variant="outlined">
                         Log out
                       </Button>
                     </List>
+                    </>
                   )}
                 </div>
               </div>
@@ -180,7 +186,7 @@ const Header = () => {
                                       <span className="price">
                                         {item.price}
                                       </span>
-                                      <Link onClick={() => {}}>
+                                      <Link onClick={() => {addToCart(item)}}>
                                         Add to cart
                                       </Link>
                                     </div>
